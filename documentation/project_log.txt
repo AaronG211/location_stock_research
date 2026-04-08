@@ -1,0 +1,35 @@
+# Project Research Log: Corporate Geographic Clustering and Stock Returns
+
+## Phase 1: Data Acquisition (2026-04-07)
+- Identified 10-K header dataset (Loughran-McDonald) as the source for historical corporate headquarters.
+- Parsed 10-K headers (1993-2024) to extract CIK, Year, and ZIP codes.
+- Created CIK-to-Ticker mapping using SEC auxiliary data.
+- Built a monthly geographic panel (MSA level) for all listed stocks spanning 2012-2023.
+
+## Phase 2: Financial Data Pipeline
+- Connected to WRDS (CRSP) to fetch monthly stock returns, prices, and market capitalization for all US stocks (2012-2023).
+- Standardized market capitalization to nominal USD (multiplier of 1000).
+- Implemented Fama-French 48 Industry mapping based on historical SIC codes.
+- Constructed 5 core Benchmark ETFs:
+    - `location_simple`: Equal-weighted return of all stocks in a specific MSA.
+    - `location_weighted`: Value-weighted return of all stocks in a specific MSA.
+    - `industry_simple`: Equal-weighted return of all stocks in a specific FF48 industry.
+    - `industry_weighted`: Value-weighted return of all stocks in a specific FF48 industry.
+    - `market_weighted`: Value-weighted return of the total US market.
+
+## Phase 3: Feature Engineering & Cleaning
+- Developed "Leave-One-Out" (LOO) predictors for each stock:
+    - `industry_simple`: Average return of industry peers (excluding current stock).
+    - `location_return`: Value-weighted return of city peers (excluding current stock).
+    - `market_return`: Total market benchmark.
+- Executed stringent data quality filters:
+    - Removed observations where a stock's MSA contained < 5 listed companies.
+    - Enforced survival criteria: Stocks must have >= 24 months of valid data in each of the three 4-year eras (2012-15, 2016-19, 2020-23).
+    - Purged ~12,900 non-compliant stocks, leaving a high-quality cohort of 2,319 stocks.
+
+## Phase 4: Quantitative Analysis
+- Authored and executed an R-based time-series regression suite for each of the 2,319 firms.
+- Calculated cross-sectional aggregate coefficients (Betas) and t-statistics.
+- Confirmed a statistically significant "Location Effect" (Beta ~0.15, t-stat > 4.5) even after controlling for Industry and Market factors.
+
+## Status: Ready for Thesis/Paper Drafting.

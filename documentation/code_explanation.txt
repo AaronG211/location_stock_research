@@ -1,0 +1,70 @@
+# Code Documentation & Execution Sequence
+
+This document explains the purpose of each script in the research pipeline and defines the strictly sequential order in which they should be executed to reproduce the dataset.
+
+---
+
+## Stage 1: Data Acquisition
+These scripts pull raw data from external databases (WRDS/SEC) or perform initial filtering on massive raw files.
+
+1. **`01_data_acquisition/fetch_stock_prices.py`**
+   - **Purpose**: Connects to the WRDS (CRSP) database to download monthly stock prices (`prc`), returns (`ret`), and shares outstanding. It automatically calculates `market_cap`.
+   - **Output**: Individual raw stock CSVs in `raw_data/stock_price/`.
+
+2. **`01_data_acquisition/fetch_cik_mapping.py`**
+   - **Purpose**: Fetches the cross-link table between SEC CIK identifiers, Compustat GVKEYs, and CRSP PERMNO/Tickers. Essential for linking geographic data with market data.
+   - **Output**: `raw_data/cik_ticker_permno_mapping.csv`.
+
+3. **`01_data_acquisition/filter_lm_header.py`**
+   - **Purpose**: Processes the massive Loughran-McDonald 10-K header master file (~1GB+) to extract only the necessary columns (CIK, Date, ZIP) for all years (1993-2024).
+   - **Output**: `cleaned_data/LM_10K_Headers_Geo_Filtered.csv`.
+
+4. **`01_data_acquisition/filter_mapping.py`**
+   - **Purpose**: Cleans the link-table, keeping only those connections that were active during the study period (2012-2023).
+   - **Output**: `raw_data/cik_ticker_permno_mapping.csv` (refined).
+
+---
+
+## Stage 2: Data Cleaning & Processing
+These scripts clean the financial data, map geographic coordinates to MSAs, and build the monthly panels.
+
+5. **`02_cleaning_processing/clean_stock_prices.py`**
+   - **Purpose**: Performs primary financial cleaning. Standardizes units (Market Cap in $), maps SIC codes to Fama-French 48 Industry classifications, and drops stocks with missing price/return data.
+   - **Output**: Cleaned individual stock CSVs in `cleaned_data/stock_price/`.
+
+6. **`02_cleaning_processing/merge_geo_stock.py`**
+   - **Purpose**: Merges the 10-K geographic headers with the stock mapping table so that every SEC filing is linked to a specific Ticker and a date-range.
+   - **Output**: `cleaned_data/merged_geo_ticker_data.csv`.
+
+7. **`02_cleaning_processing/build_monthly_zip_panel.py`**
+   - **Purpose**: Transforms the merged filing data into a "Wide Panel" where each row is a month (2012-2023) and each column is a Ticker. Values are ZIP codes. 
+   - **Output**: `cleaned_data/monthly_zip_panel_144mo.csv`.
+
+8. **`02_cleaning_processing/clean_zip_panel.py`**
+   - **Purpose**: Sanitizes ZIP codes in the wide panel (strips symbols, handles leading zeros, removes non-numeric inputs).
+   - **Output**: `cleaned_data/monthly_zip_panel_144mo_cleaned.csv`.
+
+9. **`02_cleaning_processing/build_msa_panel.py`**
+   - **Purpose**: Uses the HUD Crosswalk to map ZIP codes in the wide panel to Metropolitan Statistical Areas (MSAs/CBSAs).
+   - **Output**: `cleaned_data/monthly_msa_panel_144mo.csv`.
+
+10. **`02_cleaning_processing/build_etfs.py`**
+    - **Purpose**: Aggregates the stock panel to create 5 benchmark portfolios (Industry, Location, and Market ETFs, both weighted and simple).
+    - **Output**: `cleaned_data/etf_price/`.
+
+11. **`02_cleaning_processing/add_benchmark_returns.py`**
+    - **Purpose**: Re-processes all 15,000+ individual stock CSVs to inject "Leave-One-Out" benchmarks (`industry_simple`, `location_return`, `market_return`).
+    - **Output**: Updated CSVs in `cleaned_data/stock_price/`.
+
+12. **`02_cleaning_processing/final_clean_for_regression.py`**
+    - **Purpose**: The final quality gate. Drops city-month cells with < 5 firms and purges stocks that don't have enough data across the three 4-year study sub-periods.
+    - **Output**: Final research-ready cohort of stocks.
+
+---
+
+## Stage 3: Analysis
+The final step where statistical models are run.
+
+13. **`03_analysis/regress_betas.R`**
+    - **Purpose**: Runs time-series regressions for each firm and aggregates the results into a cross-sectional table of Betas and T-statistics.
+    - **Output**: Summary statistics (Mean Coefs & T-stats) displayed in the terminal.

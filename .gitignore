@@ -1,0 +1,8 @@
+# Raw data and massive cleaning products are ignored for git efficiency
+raw_data/
+cleaned_data/
+.DS_Store
+*.pyc
+__pycache__/
+.Rhistory
+.RData
