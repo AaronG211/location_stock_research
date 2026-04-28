@@ -3,6 +3,8 @@
 
 This repository replicates Pirinsky and Wang (2006) using U.S. equity data from 2008 to 2022. The original paper documents that stocks of firms headquartered in the same metropolitan area exhibit return co-movement beyond what industry and market factors can explain. This study tests whether the effect persists in the modern era, and introduces a value-weighted extension (Model 2) alongside the original equal-weighted specification (Model 1).
 
+For replication, refer to the project_log.txt and code_explaination.txt (both in the documentation folder) would be helpful. 
+
 ---
 
 ## Repository Structure
