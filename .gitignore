@@ -6,3 +6,13 @@ cleaned_data/
 __pycache__/
 .Rhistory
 .RData
+
+# R Markdown rendering artifacts
+documentation/*_cache/
+documentation/*_files/
+documentation/*.log
+documentation/fix_paper*.py
+
+# Claude Code internals
+.agents/
+logic_logs/

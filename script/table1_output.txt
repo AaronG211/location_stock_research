@@ -1,0 +1,45 @@
+Loading MSA panel...
+MSA panel: 2308151 permno-month pairs with valid MSA
+
+Scanning cleaned (filtered) stock files...
+Surviving stock files: 5109
+  Processed 3000 / 5109...
+Collected 8298 (snapshot-month, permno) rows from filtered sample
+After MSA join: 8298 rows
+
+Computing Panel A...
+Computing Panel B...
+
+
+====================================================================== 
+                     Table I: Summary Statistics
+====================================================================== 
+
+Counts are based on the FILTERED research sample
+(MSA >=5 firms AND >=2 FF48 industries, 24-month coverage rule;
+the residual 'Other' bucket is excluded from Panel B industry counts).
+
+---------------------------------------------------------------------- 
+                              Panel A
+---------------------------------------------------------------------- 
+                                     Number of Firms per MSA
+Year    No. of Firms     No. of MSA      Mean  Median   Min.   Max.
+---------------------------------------------------------------------- 
+2012    2803             83                34      13      5    343
+2017    2815             81                35      14      5    354
+2022    2680             75                36      13      5    317
+
+---------------------------------------------------------------------- 
+                              Panel B
+---------------------------------------------------------------------- 
+                          Number of Industries per MSA
+Year    No. of Industries         Mean  Median   Min.   Max.
+---------------------------------------------------------------------- 
+2012    48                        12      10      2     40
+2017    48                        11       8      2     39
+2022    48                        11       8      2     35
+====================================================================== 
+
+Results saved to:
+  /Users/shenghangao/Desktop/research/script/03_analysis/table1_panel_a.csv
+  /Users/shenghangao/Desktop/research/script/03_analysis/table1_panel_b.csv

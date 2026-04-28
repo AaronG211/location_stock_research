@@ -4,7 +4,7 @@ import glob
 import numpy as np
 
 def safe_wavg(group, data_col, weight_col):
-    """安全地计算市值加权平均数，避免全市场市值为空或加了 0 进而报错"""
+    """Compute value-weighted average, returning NaN if total weight is zero or missing."""
     d = group[data_col]
     w = group[weight_col]
     if w.sum() == 0 or pd.isna(w.sum()):
@@ -14,7 +14,7 @@ def safe_wavg(group, data_col, weight_col):
 def build_etfs():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     stock_dir = os.path.join(BASE_DIR, '../../cleaned_data/stock_price')
-    msa_panel_path = os.path.join(BASE_DIR, '../../cleaned_data/monthly_msa_panel_144mo.csv')
+    msa_panel_path = os.path.join(BASE_DIR, '../../cleaned_data/monthly_msa_panel_180mo.csv')
     
     out_dir = os.path.join(BASE_DIR, '../../cleaned_data/etf_price')
     os.makedirs(out_dir, exist_ok=True)
@@ -23,9 +23,11 @@ def build_etfs():
     # Step 1: Melt MSA wide panel to long format for easy merging
     # ------------------
     print("Melting MSA geographic panel into long format...")
-    msa_df = pd.read_csv(msa_panel_path, index_col=0)
+    msa_df = pd.read_csv(msa_panel_path, index_col=0, dtype=str)
     msa_df.index.name = 'Month'
-    msa_long = msa_df.reset_index().melt(id_vars=['Month'], var_name='Ticker', value_name='Location_MSA')
+    msa_df.columns = [str(col).replace('.0', '') for col in msa_df.columns]
+    msa_long = msa_df.reset_index().melt(id_vars=['Month'], var_name='permno', value_name='Location_MSA')
+    msa_long['permno'] = msa_long['permno'].astype(str).str.replace('.0', '', regex=False)
     msa_long.dropna(subset=['Location_MSA'], inplace=True)
     
     # Handle Location_MSA as string to avoid precision issues
@@ -36,6 +38,7 @@ def build_etfs():
     # ------------------
     print("Assembling master panel from individual stock files (may take a few seconds)...")
     csv_files = glob.glob(os.path.join(stock_dir, "*.csv"))
+    eligible_permnos = set(msa_df.columns)
     
     all_stocks = []
     
@@ -45,16 +48,18 @@ def build_etfs():
             continue
             
         filename = os.path.basename(file)
-        ticker = filename.split('_')[0]
+        permno = filename.split('_')[1].split('.')[0]
+        if permno not in eligible_permnos:
+            continue
         
         # Standardize date to Month (YYYY-MM)
         df['Month'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m')
-        df['Ticker'] = ticker
+        df['permno'] = permno
         
         if 'industry' not in df.columns:
             df['industry'] = pd.NA
             
-        df_subset = df[['Month', 'Ticker', 'ret', 'market_cap', 'industry']].copy()
+        df_subset = df[['Month', 'permno', 'ret', 'market_cap', 'industry']].copy()
         
         df_subset['ret'] = pd.to_numeric(df_subset['ret'], errors='coerce')
         df_subset['market_cap'] = pd.to_numeric(df_subset['market_cap'], errors='coerce')
@@ -68,7 +73,7 @@ def build_etfs():
     # Step 3: Merge Geographic Location (MSA) data
     # ------------------
     print("Merging geographic MSA metadata into the panel...")
-    merged_df = pd.merge(master_df, msa_long, on=['Month', 'Ticker'], how='left')
+    merged_df = pd.merge(master_df, msa_long, on=['Month', 'permno'], how='left')
     
     # ------------------
     # Step 4: Compute the 5 core Benchmark ETFs (Simple and Value-Weighted)
@@ -95,13 +100,13 @@ def build_etfs():
     ).unstack()
     ind_weighted.to_csv(os.path.join(out_dir, 'industry_weighted.csv'))
     
-    # 5. market_weighted (Total market value-weighted benchmark)
+    # 5. Sample-derived market benchmark from the eligible stock universe
     mkt_weighted = merged_df.groupby('Month').apply(
         lambda g: safe_wavg(g, 'ret', 'market_cap')
-    ).to_frame(name='Market_Weighted_Return')
-    mkt_weighted.to_csv(os.path.join(out_dir, 'market_weighted.csv'))
+    ).to_frame(name='market_return')
+    mkt_weighted.to_csv(os.path.join(out_dir, 'market_return.csv'))
     
-    print(f"🎉 Generation of 5 ETFs concluded successfully! Files available in: {out_dir}")
+    print(f"ETF benchmark panel generation complete. Files saved to: {out_dir}")
 
 if __name__ == "__main__":
     build_etfs()

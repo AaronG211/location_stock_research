@@ -42,17 +42,17 @@ def clean_zip_panel(input_path, output_path):
     surviving_cols = df_cleaned.shape[1]
     dropped_cols = original_cols - surviving_cols
     
-    print(f"✅ Success: Purged {dropped_cols} tickers with invalid/empty data history.")
-    print(f"💼 Final clean matrix: {df_cleaned.shape[0]} months x {surviving_cols} valid tickers.")
+    print(f"Purged {dropped_cols} permnos with invalid/empty data history.")
+    print(f"Final clean matrix: {df_cleaned.shape[0]} months x {surviving_cols} valid permnos.")
     
     # Keep output directory clean
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df_cleaned.to_csv(output_path)
-    print(f"✅ Cleaned data saved realized in: {output_path}")
+    print(f"Cleaned data saved to: {output_path}")
 
 if __name__ == "__main__":
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    INPUT_FILE = os.path.abspath(os.path.join(BASE_DIR, '../../cleaned_data/monthly_zip_panel_144mo.csv'))
-    OUTPUT_FILE = os.path.abspath(os.path.join(BASE_DIR, '../../cleaned_data/monthly_zip_panel_144mo_cleaned.csv'))
+    INPUT_FILE = os.path.abspath(os.path.join(BASE_DIR, '../../cleaned_data/monthly_zip_panel_180mo.csv'))
+    OUTPUT_FILE = os.path.abspath(os.path.join(BASE_DIR, '../../cleaned_data/monthly_zip_panel_180mo_cleaned.csv'))
     
     clean_zip_panel(INPUT_FILE, OUTPUT_FILE)

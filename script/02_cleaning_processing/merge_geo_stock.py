@@ -28,6 +28,13 @@ def merge_geo_and_stock(geo_path, mapping_path, output_path):
                  (merged_df['FILING_DATE_DT'] <= merged_df['linkenddt'])
                  
     final_df = merged_df[valid_mask].copy()
+
+    # Pirinsky-Wang focus on domestic firms. When Compustat exposes a
+    # country-of-incorporation flag, retain U.S.-incorporated firms only.
+    if 'fic' in final_df.columns:
+        fic = final_df['fic'].astype(str).str.upper().str.strip()
+        final_df = final_df[fic.isin(['USA', 'US', 'UNITED STATES'])]
+
     final_df = final_df.drop(columns=['FILING_DATE_DT', 'cik'])
     
     # -------------------------------
@@ -36,8 +43,8 @@ def merge_geo_and_stock(geo_path, mapping_path, output_path):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     final_df.to_csv(output_path, index=False)
     
-    print(f"✅ Merge complete! Mapped {len(final_df)} filing records.")
-    print(f"✅ File saved to: {output_path}")
+    print(f"Merge complete! Mapped {len(final_df)} filing records.")
+    print(f"File saved to: {output_path}")
 
 if __name__ == "__main__":
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))

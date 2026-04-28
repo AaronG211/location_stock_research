@@ -1,14 +1,29 @@
 import pandas as pd
 import wrds
+import os
 
 def fetch_cik_mapping():
     print("Connecting to WRDS...")
     db = wrds.Connection()
     
-    print("Downloading Compustat company info (Mapping GVKEY to CIK)...")
-    # Fetch Compustat company table
-    comp = db.raw_sql("""
-        SELECT gvkey, cik, conm
+    print("Inspecting Compustat company schema...")
+    comp_cols = db.raw_sql("""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'comp'
+          AND table_name = 'company'
+    """)
+    comp_cols = set(comp_cols['column_name'].str.lower())
+
+    company_fields = ['gvkey', 'cik', 'conm']
+    optional_fields = ['fic', 'loc', 'state', 'county', 'city', 'addzip']
+    for field in optional_fields:
+        if field in comp_cols:
+            company_fields.append(field)
+
+    print("Downloading Compustat company info (Mapping GVKEY to CIK + HQ metadata)...")
+    comp = db.raw_sql(f"""
+        SELECT {', '.join(company_fields)}
         FROM comp.company
     """)
     
@@ -48,14 +63,22 @@ def fetch_cik_mapping():
     mapping['linkenddt'] = mapping['linkenddt'].fillna('2099-12-31')
     
     # Sort and structure
-    mapping = mapping[['cik', 'ticker', 'permno', 'gvkey', 'conm', 'linkdt', 'linkenddt']]
+    ordered_cols = ['cik', 'ticker', 'permno', 'gvkey', 'conm', 'linkdt', 'linkenddt']
+    for field in optional_fields:
+        if field in mapping.columns:
+            ordered_cols.append(field)
+    mapping = mapping[ordered_cols]
     
-    # Adjust output path for new folder structure (script/data_processing/)
-    output_path = '../../raw_data/cik_ticker_permno_mapping.csv'
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.abspath(os.path.join(BASE_DIR, '../../raw_data'))
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, 'cik_ticker_permno_mapping.csv')
     mapping.to_csv(output_path, index=False)
     
     print(f"\nMapping table extraction complete! Total records: {len(mapping)}")
     print(f"File saved to: {output_path}")
+
+    db.close()
     
     return mapping
 

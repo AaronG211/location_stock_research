@@ -28,13 +28,13 @@ def filter_lm_header(input_csv, output_csv):
         os.makedirs(os.path.dirname(output_csv), exist_ok=True)
         df.to_csv(output_csv, index=False)
         
-        print(f"✅ Filtered complete! Kept {df.shape[0]} rows, {df.shape[1]} columns.")
-        print(f"✅ Output saved to: {output_csv}")
-        
+        print(f"Filtered complete! Kept {df.shape[0]} rows, {df.shape[1]} columns.")
+        print(f"Output saved to: {output_csv}")
+
     except FileNotFoundError:
-        print(f"❌ Error: File '{input_csv}' not found.")
+        print(f"Error: File '{input_csv}' not found.")
     except Exception as e:
-        print(f"❌ Unknown error: {e}")
+        print(f"Unknown error: {e}")
 
 if __name__ == "__main__":
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -3,11 +3,11 @@
 ## Phase 1: Data Acquisition (2026-04-07)
 - Identified 10-K header dataset (Loughran-McDonald) as the source for historical corporate headquarters.
 - Parsed 10-K headers (1993-2024) to extract CIK, Year, and ZIP codes.
-- Created CIK-to-Ticker mapping using SEC auxiliary data.
-- Built a monthly geographic panel (MSA level) for all listed stocks spanning 2012-2023.
+- Built a WRDS-based CIK/GVKEY/PERMNO mapping table for linking SEC filings to CRSP securities.
+- Built a monthly geographic panel (MSA level) for listed stocks spanning 2009-2023.
 
 ## Phase 2: Financial Data Pipeline
-- Connected to WRDS (CRSP) to fetch monthly stock returns, prices, and market capitalization for all US stocks (2012-2023).
+- Connected to WRDS (CRSP) to fetch monthly stock returns, prices, and market capitalization for all US stocks (2009-2023).
 - Standardized market capitalization to nominal USD (multiplier of 1000).
 - Implemented Fama-French 48 Industry mapping based on historical SIC codes.
 - Constructed 5 core Benchmark ETFs:
@@ -20,16 +20,127 @@
 ## Phase 3: Feature Engineering & Cleaning
 - Developed "Leave-One-Out" (LOO) predictors for each stock:
     - `industry_simple`: Average return of industry peers (excluding current stock).
+    - `industry_weighted`: Value-weighted return of industry peers (excluding current stock).
     - `location_return`: Value-weighted return of city peers (excluding current stock).
     - `market_return`: Total market benchmark.
 - Executed stringent data quality filters:
-    - Removed observations where a stock's MSA contained < 5 listed companies.
-    - Enforced survival criteria: Stocks must have >= 24 months of valid data in each of the three 4-year eras (2012-15, 2016-19, 2020-23).
-    - Purged ~12,900 non-compliant stocks, leaving a high-quality cohort of 2,319 stocks.
+    - Marked an MSA-month as valid only when it contained >= 5 listed companies and >= 2 FF48 industries.
+    - Enforced survival criteria: Stocks must have >= 24 months of valid data in at least one of the three 5-year eras (2009-13, 2014-18, 2019-23).
+    - The current workspace retains 6,170 cleaned stock files after the final pre-regression filter.
 
 ## Phase 4: Quantitative Analysis
-- Authored and executed an R-based time-series regression suite for each of the 2,319 firms.
+- Authored and executed an R-based time-series regression suite over the final cleaned stock universe.
 - Calculated cross-sectional aggregate coefficients (Betas) and t-statistics.
-- Confirmed a statistically significant "Location Effect" (Beta ~0.15, t-stat > 4.5) even after controlling for Industry and Market factors.
+- Current all-stock regression counts are 3,491 (2009-2013), 3,507 (2014-2018), and 4,073 (2019-2023).
+- Model 1 location betas are 0.065, 0.191, and 0.143 across the three windows.
+- Model 2 location betas are 0.056, 0.228, and 0.210 for the full sample, and 0.092, 0.199, and 0.201 for the S&P 500 subsample.
 
-## Status: Ready for Thesis/Paper Drafting.
+## Status: Draft and supporting documentation aligned to the latest 03_analysis results.
+
+---
+
+## Replication Guide: Full Pipeline Execution Order
+
+To fully replicate this study from scratch, run the scripts in the order below.
+All paths are relative to the `script/` directory.
+
+### Prerequisites (Manual Downloads — not scripted)
+The following files must be manually downloaded and placed in `raw_data/` before running any script:
+- `LoughranMcDonald_10-K_HeaderData_1993-2024.csv` — from https://sraf.nd.edu/sec-edgar-data/
+- `ZIP_MSA_122023.csv` — HUD ZIP-CBSA crosswalk (December 2023 vintage) from https://www.huduser.gov/portal/datasets/usps_crosswalk.html
+- `ff48_industries.csv` — Fama-French 48 industry SIC mapping from https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html
+- WRDS credentials required for scripts that connect to CRSP/Compustat
+
+---
+
+### Stage 1: Data Acquisition (01_data_acquisition/)
+
+**Step 1** — `fetch_cik_mapping.py`
+- Connects to WRDS/Compustat to fetch CIK-GVKEY-PERMNO mapping
+- Output: `raw_data/cik_ticker_permno_mapping.csv`
+
+**Step 2** — `filter_mapping.py`
+- Filters the mapping table to primary link types (LC/LU) and valid date ranges
+- Output: `raw_data/cik_ticker_permno_mapping.csv` (overwrites with cleaned version)
+
+**Step 3** — `filter_lm_header.py`
+- Filters the Loughran-McDonald 10-K header file to relevant geographic fields (CIK, filing date, business address ZIP)
+- Requires: `raw_data/LoughranMcDonald_10-K_HeaderData_1993-2024.csv`
+- Output: `cleaned_data/LM_10K_Headers_Geo_Filtered.csv`
+
+**Step 4** — `fetch_stock_prices.py`
+- Connects to WRDS/CRSP to download monthly stock returns, prices, shares outstanding, and SIC codes for all US stocks (2008–2022)
+- Output: `raw_data/stock_price/{permno}.csv` — one CSV per PERMNO
+
+**Step 5** — `fetch_sp500_constituents.py`
+- Fetches annual S&P 500 constituent lists from WRDS
+- Output: `raw_data/sp500_annual_constituents_2007_2022.csv`
+
+**Step 6** — `fetch_market_factors.py`
+- Downloads Fama-French monthly market factors
+- Output: `raw_data/monthly_market_factors.csv`
+
+---
+
+### Stage 2: Cleaning & Processing (02_cleaning_processing/)
+These steps can also be run via `script/run_pipeline.sh`.
+
+**Step 7** — `clean_stock_prices.py`
+- Applies stock-level filters: removes REITs/closed-end funds, coerces numeric fields, drops missing returns, maps SIC codes to FF48 industries
+- Output: `cleaned_data/stock_price/{permno}.csv` — cleaned versions of each stock file
+
+**Step 8** — `merge_geo_stock.py`
+- Merges the filtered 10-K geographic headers with the CIK-PERMNO mapping to assign a ZIP code to each stock-month
+- Output: `cleaned_data/merged_geo_ticker_data.csv`
+
+**Step 9** — `build_monthly_zip_panel.py`
+- Forward-fills each firm's ZIP code assignment across months to build a monthly ZIP-level panel
+- Output: `cleaned_data/monthly_zip_panel_180mo.csv`
+
+**Step 10** — `clean_zip_panel.py`
+- Cleans the ZIP panel: standardises ZIP format, removes rural codes (HUD 99999), resolves multi-MSA ZIPs using BUS_RATIO
+- Output: `cleaned_data/monthly_zip_panel_180mo_cleaned.csv`
+
+**Step 11** — `build_msa_panel.py`
+- Converts the cleaned ZIP panel to a monthly MSA panel using the HUD ZIP-CBSA crosswalk
+- Requires: `raw_data/ZIP_MSA_122023.csv`
+- Output: `cleaned_data/monthly_msa_panel_180mo.csv`
+
+**Step 12** — `build_etfs.py`
+- Constructs five monthly index return series (all stocks, no LOO):
+  - `location_simple.csv` — equal-weighted location index
+  - `location_weighted.csv` — value-weighted location index
+  - `industry_simple.csv` — equal-weighted industry index
+  - `industry_weighted.csv` — value-weighted industry index
+  - `market_return.csv` — value-weighted market portfolio
+- Output directory: `cleaned_data/etfs/`
+
+**Step 13** — `add_benchmark_returns.py`
+- Merges the index return series into each stock file using leave-one-out logic (excludes firm $i$ from its own location and industry index)
+- Also computes MSA validity flags (≥5 firms, ≥2 FF48 industries)
+- Output: `cleaned_data/stock_price/{permno}.csv` updated in place with new columns; `cleaned_data/msa_validity.csv`
+
+**Step 14** — `final_clean_for_regression.py`
+- Applies final regression-ready filters: enforces the 24-month minimum observation requirement, drops stocks that fail the temporal continuity criterion in all three windows
+- Output: `cleaned_data/stock_price/{permno}.csv` updated in place (files not meeting the threshold are deleted)
+
+---
+
+### Stage 3: Analysis (03_analysis/)
+
+**Step 15** — `table1_summary_stats.R`
+- Computes summary statistics on firms and industries per MSA at December 2012, 2017, and 2022 snapshot months
+- Output: `script/03_analysis/table1_panel_a.csv`, `script/03_analysis/table1_panel_b.csv`
+
+**Step 16** — `regress_betas.R`
+- Runs Model 1 time-series regressions (equal-weighted location and industry indexes) for each stock in each five-year window; reports cross-sectional mean betas and t-statistics for both the broad sample and S&P 500 subsample
+- Output: printed to console (redirect to `script/regress_results_ew.txt` via `Rscript regress_betas.R > regress_results_ew.txt`)
+
+**Step 17** — `regress_betas_model2_vw.R`
+- Runs Model 2 time-series regressions (value-weighted location and industry indexes) for each stock in each five-year window; same reporting structure as Step 16
+- Output: printed to console (redirect to `script/model2_results_ew.txt` via `Rscript regress_betas_model2_vw.R > model2_results_ew.txt`)
+
+---
+
+### Quick Re-run (Stages 2–3 only)
+If raw data is already in place, run `script/run_pipeline.sh` from the `script/` directory to execute Steps 7–17 in sequence.
