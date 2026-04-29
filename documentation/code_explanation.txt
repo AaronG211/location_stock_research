@@ -59,9 +59,9 @@ These scripts clean the stock panel, map firms to MSAs, build benchmark portfoli
 
 12. **`02_cleaning_processing/add_benchmark_returns.py`**
     - **Purpose**: Constructs the leave-one-out regressors added back to each stock file:
-      `market_return`, `industry_simple`, `industry_weighted`, and `location_return`.
+      `market_return`, `industry_simple`, `industry_weighted`, `location_simple`, and `location_weighted`.
       It also defines valid MSA-month cells using the current rule: at least 5 firms and at least 2 FF48 industries.
-    - **Output**: Updated stock CSVs in `cleaned_data/stock_price/` and `cleaned_data/msa_validity_panel.csv`.
+    - **Output**: Updated stock CSVs in `cleaned_data/stock_price/` and `cleaned_data/msa_validity.csv`.
 
 13. **`02_cleaning_processing/final_clean_for_regression.py`**
     - **Purpose**: Final pre-regression filter. It drops rows with missing regression inputs and keeps only stocks that have at least 24 clean months in at least one of the three five-year windows: 2008-2012, 2013-2017, and 2018-2022.
@@ -78,13 +78,13 @@ These scripts produce the summary statistics and the firm-level beta estimates r
 
 15. **`03_analysis/regress_betas.R`**
     - **Purpose**: Runs firm-level time-series regressions for Model 1:
-      `ret ~ location_return + market_return + industry_simple`.
+      `ret ~ location_simple + market_return + industry_simple`.
       It reports cross-sectional mean betas and t-statistics for all stocks and for the S&P 500 subsample.
     - **Output**: Terminal summary for the windows 2008-2012, 2013-2017, and 2018-2022.
 
 16. **`03_analysis/regress_betas_model2_vw.R`**
     - **Purpose**: Runs firm-level time-series regressions for Model 2:
-      `ret ~ location_return + market_return + industry_weighted`.
+      `ret ~ location_weighted + market_return + industry_weighted`.
       It reports cross-sectional mean betas and t-statistics for all stocks and for the S&P 500 subsample.
     - **Output**: Terminal summary for the windows 2008-2012, 2013-2017, and 2018-2022.
 

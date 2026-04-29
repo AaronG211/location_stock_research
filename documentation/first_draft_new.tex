@@ -1,0 +1,798 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{hyperref}
+\doublespacing
+\captionsetup[table]{skip=8pt}
+\setlength{\parindent}{2em}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Does Corporate Headquarters Location Still Matter for Stock Returns? A Modern Replication and Extension of Pirinsky and Wang (2006)},
+  pdfauthor={Shenghang Gao},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Does Corporate Headquarters Location Still Matter for Stock
+Returns? A Modern Replication and Extension of Pirinsky and Wang (2006)}
+\author{Shenghang Gao}
+\date{April 26, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Pirinsky and Wang (2006) document that stocks of firms headquartered in the same geographic area exhibit significant return co-movement that cannot be explained by industry or market factors. By using a comprehensive dataset of U.S. equities from 2008 to 2022, this study replicates their methodology in a modern setting. Following the original paper, equally weighted location and industry benchmarks are constructed. Beyond that, a new model that builds both the location and industry benchmarks with market-capitalization weighting is introduced. For the broad sample, the location factor is positive and statistically significant in every five-year sub-period, with beta averages ranging from 0.200 to 0.295 in Model 1 and from 0.116 to 0.222 in Model 2. The results show that across the whole market, the location effect persists and strengthens into the most recent decade. Among S\&P 500 constituents, the pure equally weighted specification produces location factors that are statistically indistinguishable from zero, while the value-weighted specification produces a location loading that is positive and statistically significant in every window, rising from 0.079 in 2008--2012 to 0.192 in 2018--2022. Rather than disappearing, geographic return co-movement remains present in the modern era even under the value-weighted benchmark design.
+\end{abstract}
+
+\noindent \textbf{Keywords:} geographic co-movement, stock returns,
+headquarters location, location factor, Pirinsky--Wang replication, MSA,
+Fama--MacBeth
+
+\newpage
+
+\section{Introduction}\label{introduction}
+
+Pirinsky and Wang (2006) demonstrate that stock returns exhibit
+co-movement beyond what standard asset pricing models predict. While
+market-wide and industry-level factors are well understood, they
+identify an additional dimension of return co-movement: \emph{geographic
+location}. Their study shows that firms headquartered in the same
+metropolitan area display correlated returns that are independent of
+industry and market effects. Using data from 1988 to 2002, they report
+location factor betas (\(\beta_{Loc}\)) ranging from 0.459 to 0.545,
+with \(t\)-statistics exceeding 22 in every sub-period.
+
+Their explanation centers on \emph{local investor sentiment}. Because
+retail and institutional investors tend to choose to invest in local
+stocks---a phenomenon commonly referred to as the home bias---correlated
+trading by geographically concentrated investors induces co-movement
+among firms in the same area. Importantly, this co-movement is not
+driven by local economic fundamentals; Pirinsky and Wang (2006) show
+that their results survive controls for local macroeconomic variables.
+
+The original study was conducted in an era of fundamentally different
+market microstructure. Since 2006, several transformations have reshaped
+U.S. equity markets:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Algorithmic and high-frequency trading} now accounts for the
+  majority of equity volume, potentially arbitraging away
+  sentiment-driven mispricings.
+\item
+  \textbf{Digital information dissemination} has reduced the
+  informational advantage of geographic proximity.
+\item
+  \textbf{The COVID-19 pandemic} (2020--2022) catalyzed a dramatic shift
+  toward remote work, potentially weakening the economic relevance of
+  corporate headquarters location.
+\end{enumerate}
+
+These developments motivate the central research question of this paper:
+Does the geographic co-movement effect documented by Pirinsky and Wang
+(2006) persist in the modern U.S. equity market?
+
+The main findings are the following. First, in the broad sample the
+location effect remains positive and statistically significant in every
+sub-period of 2008--2022. Second, the S\&P 500 results show that the
+conclusion for large-cap firms depends on how the location and industry
+benchmarks are constructed: the location effect is not distinguishable
+from zero when those benchmarks are equally weighted, but it becomes
+positive and statistically significant when they are weighted by market
+capitalization. The joint pattern suggests persistence rather than
+disappearance: the modern location factor remains economically
+meaningful, but its visibility depends on how the location and industry
+benchmarks are constructed.
+
+The remainder of this paper is organized as follows. Section 2 describes
+the data sources and sample construction. Section 3 details the data
+cleaning and processing pipeline. Section 4 presents the econometric
+methodology. Section 5 reports the results. Section 6 discusses the
+findings and their implications. Section 7 concludes.
+
+\section{Data}\label{data}
+
+\subsection{Data Sources}\label{data-sources}
+
+This study draws on five primary data sources, each serving a distinct
+role in the construction of the final estimation sample. Table 1
+summarizes these sources.
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:data-sources}Summary of Data Sources}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{10}{12}\selectfont
+\begin{tabular}[t]{>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}p{4.5cm}>{\raggedright\arraybackslash}p{1.8cm}>{\raggedright\arraybackslash}p{4.5cm}}
+\toprule
+Source & Description & Coverage & Role\\
+\midrule
+WRDS/CRSP & Monthly stock prices, returns, shares outstanding, SIC codes & 2008--2022 & Stock-level returns and market capitalization\\
+WRDS/Compustat & Company identifiers (CIK, GVKEY) and CRSP-Compustat merged linktable & Ongoing & Cross-database identifier linkage (CIK-GVKEY-PERMNO)\\
+SEC/Loughran-McDonald & 10-K filing headers with geographic data (state, city, ZIP code) & 1993--2024 & Corporate headquarters geographic identification\\
+HUD ZIP-CBSA Crosswalk & ZIP code to Metropolitan Statistical Area (CBSA/MSA) mapping & Updated quarterly & ZIP-to-MSA geographic aggregation\\
+Fama-French Industries & SIC code to Fama-French 48 industry classification mapping & Static reference & Industry classification for benchmark construction\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\textbf{CRSP.} The Center for Research in Security Prices (CRSP) monthly
+stock file, accessed through the Wharton Research Data Services (WRDS),
+provides the core financial variables: stock price (\(PRC\)), monthly
+return (\(RET\)), shares outstanding (\(SHROUT\)), Standard Industrial
+Classification code (\(SIC\)), and the permanent security identifier
+(\(PERMNO\)). Market capitalization for firm \(i\) in month \(t\) is
+computed as:
+
+\[MCAP_{i,t} = |PRC_{i,t}| \times SHROUT_{i,t} \times 1000\]
+
+\noindent where the absolute value of price accounts for CRSP's
+convention of reporting bid-ask midpoints as negative values when the
+closing price is unavailable, and the multiplication by 1,000 converts
+CRSP's units (thousands of shares) to dollars.
+
+\textbf{Compustat and CRSP-Compustat Merged (CCM).} The Compustat
+database provides the Central Index Key (\(CIK\)), which is the SEC's
+unique firm identifier used in 10-K filings. The CCM linktable bridges
+the Compustat identifier (\(GVKEY\)) to the CRSP identifier
+(\(PERMNO\)), enabling a three-way mapping:
+\(CIK \leftrightarrow GVKEY \leftrightarrow PERMNO\). Primary link
+records (link type LC or LU) are retained and aligned to filing dates
+during preprocessing.
+
+\textbf{Loughran-McDonald 10-K Headers.} The Loughran-McDonald Master
+Dictionary dataset includes parsed header information from all SEC 10-K
+filings from 1993 to 2024. The geographic fields are extracted: business
+address state, city, and ZIP code, as well as mailing address
+equivalents. Each filing is identified by \(CIK\) and filing date. This
+dataset serves as the primary source for determining the physical
+location of each firm's headquarters, which is a critical distinction
+from using state of incorporation (a legal, rather than economic,
+concept).
+
+\textbf{HUD ZIP-CBSA Crosswalk.} The U.S. Department of Housing and
+Urban Development (HUD) provides a quarterly crosswalk mapping
+five-digit ZIP codes to Core-Based Statistical Areas (CBSAs), which
+correspond to Metropolitan Statistical Areas (MSAs). When a ZIP code
+maps to multiple CBSAs, the CBSA with the highest business activity
+ratio (\(BUS\_RATIO\)), defined by HUD as the share of business
+addresses in that ZIP assigned to a given CBSA, is selected. Rural ZIP
+codes (HUD code 99999) are excluded.
+
+\textbf{Fama-French 48 Industries.} The Fama-French 48-industry
+classification maps four-digit SIC codes to 48 industry groups. This
+classification is standard in empirical asset pricing and provides a
+consistent industry taxonomy across the full sample period.
+
+\subsection{Sample Construction}\label{sample-construction}
+
+The raw data acquisition pulls the entire CRSP monthly universe from
+January 2008 through December 2022 (180 months), producing tens of
+thousands of individual stock-level CSV files before any filtering. The
+return sample is subsequently analyzed over three non-overlapping
+five-year estimation windows: 2008--2012, 2013--2017, and 2018--2022.
+These windows deliberately straddle three distinct macroeconomic
+regimes: the post-global-financial-crisis recovery, the mid-2010s
+expansion, and the COVID-19 pandemic together with its immediate
+aftermath.
+
+The geographic assignment process proceeds as follows. Each firm's 10-K
+filing header provides a ZIP code, which is mapped to an MSA via the HUD
+crosswalk. For months between filings, the most recent filing's
+geographic assignment is forward-filled, reflecting the assumption that
+corporate headquarters relocations are infrequent. When both a business
+address ZIP and a mailing address ZIP are available, the business
+address takes priority.
+
+\section{Data Cleaning and
+Processing}\label{data-cleaning-and-processing}
+
+The raw data undergoes a multi-stage cleaning pipeline. Each step is
+designed to address specific data quality concerns that, if left
+unaddressed, would introduce systematic biases into the regression
+estimates. This section details each step and justifies its necessity.
+
+\subsection{Stock-Level Filtering}\label{stock-level-filtering}
+
+\textbf{Exclusion of non-operating entities.} Stocks with SIC codes 6798
+(Real Estate Investment Trusts), 6722 (Management Investment Offices,
+Open-End), and 6726 (Investment Offices, Closed-End) are removed. REITs
+and closed-end funds have fundamentally different return-generating
+processes from operating companies; their returns are driven primarily
+by the returns of their underlying portfolios rather than by the
+economic environment of their headquarters location. Including them
+would contaminate the location factor with portfolio-level return
+dynamics.
+
+\textbf{Numeric coercion and missing data removal.} CRSP occasionally
+reports non-numeric return codes (e.g., character codes for delisting)
+in the \(RET\) field. All price and return fields are coerced to numeric
+values, with non-convertible entries set to missing. Observations with
+missing price or return data are dropped. This step is essential because
+even a single non-numeric entry can silently corrupt an entire
+time-series regression if not caught.
+
+\textbf{Industry classification.} Each stock's four-digit SIC code is
+mapped to the Fama-French 48-industry classification. Stocks with SIC
+codes that do not fall within any of the 48 industry ranges are assigned
+to an ``Other'' residual category. This residual bucket is retained in
+the return regressions and benchmark construction so that unmatched
+firms are not dropped mechanically, but it is excluded from the
+summary-statistics count of canonical Fama-French industries.
+
+\subsection{Geographic Assignment and
+Cleaning}\label{geographic-assignment-and-cleaning}
+
+\textbf{ZIP-to-MSA mapping.} Cleaned ZIP codes are mapped to MSAs using
+the HUD crosswalk. For one-to-many mappings (a single ZIP straddling
+multiple MSAs), the MSA with the maximum \(BUS\_RATIO\) is selected,
+where \(BUS\_RATIO\) is HUD's measure of the share of business addresses
+in that ZIP associated with each candidate CBSA. This resolves the
+geographic ambiguity by assigning each firm to the MSA where the
+plurality of commercial activity at that ZIP code occurs. Rural areas
+(HUD code 99999) are coded as missing, as they lack the agglomeration
+effects central to the Pirinsky--Wang hypothesis.
+
+\textbf{Forward-filling.} The monthly MSA panel is constructed by
+forward-filling each firm's most recent geographic assignment. This
+reflects the economic reality that firms do not relocate on a monthly
+basis; their headquarters location is a slow-moving characteristic. A
+firm's MSA assignment changes only when a new 10-K filing reports a
+different ZIP code.
+
+\subsection{Quality Filters for
+Regression}\label{quality-filters-for-regression}
+
+Two final filters ensure that the estimation sample contains only
+observations with sufficient statistical power:
+
+\textbf{Minimum MSA listing count and industry breadth.} For each
+stock-month observation, the firm's MSA is required to contain at least
+five publicly listed companies and at least two Fama-French 48
+industries in that month. Location benchmarks constructed from less data
+than this threshold would be excessively noisy and vulnerable to
+single-industry shocks.
+
+\textbf{Temporal continuity.} Each stock must have at least 24 months of
+valid data (complete cases for all regressors) within at least one of
+the three five-year estimation windows: 2008--2012, 2013--2017, and
+2018--2022. Stocks that fail this criterion in all three windows are
+removed entirely. This ensures that each firm-level time-series
+regression has sufficient degrees of freedom for reliable coefficient
+estimation.
+
+After running the full Stage-2 cleaning pipeline with PERMNO-anchored
+mapping and LOO logic corrections, the filtered workspace retains 5,088
+stock files that survive all quality screens. Table 2 reports the key
+sample sizes used in the empirical section.
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:sample-attrition}Key Sample Sizes in the Final Pipeline}
+\centering
+\fontsize{10}{12}\selectfont
+\begin{tabular}[t]{>{\raggedright\arraybackslash}p{11cm}>{\raggedright\arraybackslash}p{2.5cm}}
+\toprule
+Stage & N\\
+\midrule
+Post-cleanup research sample (valid CSV files) & 5,088\\
+Valid firm-level regressions, 2008--2012 (all stocks) & 3,275\\
+Valid firm-level regressions, 2013--2017 (all stocks) & 3,158\\
+Valid firm-level regressions, 2018--2022 (all stocks) & 3,146\\
+Valid firm-level regressions, S\&P 500 subsample (by window) & 382 / 394 / 377\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Summary Statistics}\label{summary-statistics}
+
+Before turning to the regressions, it is useful to describe the
+composition of the filtered sample. Following Pirinsky and Wang (2006),
+Tables 3 and 4 report summary statistics on the distribution of firms
+and industries across MSAs at three snapshot months, December 2012,
+December 2017, and December 2022, chosen to represent the middle of each
+five-year estimation window. Table 3 tabulates the number of firms per
+MSA, while Table 4 tabulates the number of distinct Fama-French 48
+industries represented in each MSA (excluding the residual ``Other''
+bucket). Note that due to the 24-month temporal continuity filter
+applied after benchmark construction, some MSAs in the surviving
+estimation sample may display fewer than the initial five-firm threshold
+in these snapshot months.
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:table1-panel-a}Summary Statistics Panel A: Firms per MSA (Snapshot Months)}
+\centering
+\fontsize{10}{12}\selectfont
+\begin{tabular}[t]{ccccccc}
+\toprule
+Year & No.\ Firms & No.\ MSAs & Mean & Median & Min & Max\\
+\midrule
+2012 & 2,806 & 84 & 33 & 13 & 4 & 342\\
+2017 & 2,815 & 82 & 34 & 13 & 3 & 352\\
+2022 & 2,701 & 81 & 33 & 13 & 4 & 317\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:table1-panel-b}Summary Statistics Panel B: Industries per MSA (Snapshot Months)}
+\centering
+\fontsize{10}{12}\selectfont
+\begin{tabular}[t]{cccccc}
+\toprule
+Year & No.\ Industries & Mean & Median & Min & Max\\
+\midrule
+2012 & 48 & 12 & 9 & 2 & 40\\
+2017 & 48 & 11 & 8 & 2 & 39\\
+2022 & 48 & 11 & 8 & 2 & 35\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Methodology}\label{methodology}
+
+\subsection{Benchmark Construction}\label{benchmark-construction}
+
+Following Pirinsky and Wang (2006), three benchmark return series are
+constructed for each stock \(i\) in month \(t\): a location benchmark,
+an industry benchmark, and a market benchmark. Industry and location
+benchmarks are constructed using a \emph{leave-one-out} methodology,
+excluding the current stock when calculating its own benchmarks so as to
+prevent mechanical correlation between the dependent variable and the
+regressors.
+
+\subsubsection{Location Benchmarks}\label{location-benchmarks}
+
+Let \(L_i\) denote the MSA of firm \(i\)'s headquarters, and let
+\(\mathcal{N}_{L_i,t}\) denote the set of all firms headquartered in MSA
+\(L_i\) in month \(t\), excluding firm \(i\) itself. Two location
+benchmarks are used:
+
+\textbf{Equal-weighted (Model 1):}
+
+\[R_{Loc,i,t}^{EW} = \frac{1}{|\mathcal{N}_{L_i,t}|} \sum_{j \in \mathcal{N}_{L_i,t}} R_{j,t}\]
+
+\textbf{Value-weighted (Model 2):}
+
+\[R_{Loc,i,t}^{VW} = \frac{\sum_{j \in \mathcal{N}_{L_i,t}} MCAP_{j,t} \cdot R_{j,t}}{\sum_{j \in \mathcal{N}_{L_i,t}} MCAP_{j,t}}\]
+
+\noindent where \(R_{j,t}\) is the monthly return of firm \(j\) and
+\(MCAP_{j,t}\) is the market capitalization of firm \(j\) at the
+beginning of month \(t\). The leave-one-out construction ensures that
+firm \(i\)'s own return does not enter its location benchmark, which
+would otherwise bias \(\hat{\beta}_{Loc}\) upward. This distinction
+matters for interpretation: Model 2 changes not only the industry factor
+but also the location factor, replacing the equal-weighted local-peer
+benchmark with a value-weighted local-peer benchmark.
+
+\subsubsection{Industry Benchmarks}\label{industry-benchmarks}
+
+Let \(I_i\) denote the Fama-French 48-industry classification of firm
+\(i\), and let \(\mathcal{N}_{I_i,t}\) denote the set of all firms in
+industry \(I_i\) in month \(t\), excluding firm \(i\). Two industry
+benchmarks are constructed:
+
+\textbf{Equal-weighted (Model 1):}
+
+\[R_{Ind,i,t}^{EW} = \frac{1}{|\mathcal{N}_{I_i,t}|}\sum_{j \in \mathcal{N}_{I_i,t}} R_{j,t}\]
+
+\textbf{Value-weighted (Model 2):}
+
+\[R_{Ind,i,t}^{VW} = \frac{\sum_{j \in \mathcal{N}_{I_i,t}} MCAP_{j,t} \cdot R_{j,t}}{\sum_{j \in \mathcal{N}_{I_i,t}} MCAP_{j,t}}\]
+
+\noindent The equal-weighted benchmark treats all industry peers
+symmetrically, while the value-weighted benchmark assigns greater
+influence to large-cap firms. If the location effect were merely a proxy
+for the movements of dominant firms within an industry (e.g., Apple in
+Technology, or JPMorgan in Banking), then \(\hat{\beta}_{Loc}\) should
+decline when switching from the equal-weighted to the value-weighted
+specification.
+
+\subsubsection{Market Benchmark}\label{market-benchmark}
+
+The market benchmark is the value-weighted return of all stocks in the
+sample:
+
+\[R_{Mkt,t} = \frac{\sum_{j=1}^{N_t} MCAP_{j,t} \cdot R_{j,t}}{\sum_{j=1}^{N_t} MCAP_{j,t}}\]
+
+\noindent where \(N_t\) is the total number of stocks in the sample in
+month \(t\). Unlike the location and industry benchmarks, the market
+benchmark is not leave-one-out, as the influence of any single firm on
+the aggregate market return is negligible.
+
+\subsection{Regression Specification}\label{regression-specification}
+
+For each stock \(i\), the following time-series regression is estimated
+over each five-year sub-period \{2008--2012, 2013--2017, 2018--2022\}:
+
+\textbf{Model 1 (Equal-Weighted Industry):}
+
+\[R_{i,t} = \alpha_i + \beta_{Loc,i} \cdot R_{Loc,i,t}^{EW} + \beta_{Mkt,i} \cdot R_{Mkt,t} + \beta_{Ind,i} \cdot R_{Ind,i,t}^{EW} + \varepsilon_{i,t} \tag{1}\]
+
+\textbf{Model 2 (Value-Weighted Industry and Location):}
+
+\[R_{i,t} = \alpha_i + \beta_{Loc,i} \cdot R_{Loc,i,t}^{VW} + \beta_{Mkt,i} \cdot R_{Mkt,t} + \beta_{Ind,i} \cdot R_{Ind,i,t}^{VW} + \varepsilon_{i,t} \tag{2}\]
+
+\noindent where:
+
+\begin{itemize}
+\tightlist
+\item
+  \(R_{i,t}\) is the monthly return of stock \(i\) in month \(t\);
+\item
+  \(\alpha_i\) is the firm-specific intercept;
+\item
+  \(\beta_{Loc,i}\) is the loading on the location factor, the
+  coefficient of primary interest;
+\item
+  \(\beta_{Mkt,i}\) is the loading on the market factor;
+\item
+  \(\beta_{Ind,i}\) is the loading on the industry factor;
+\item
+  \(\varepsilon_{i,t}\) is the error term, assumed to be independently
+  and identically distributed with
+  \(\mathbb{E}[\varepsilon_{i,t}] = 0\).
+\end{itemize}
+
+Each regression requires a minimum of 24 monthly observations within the
+sub-period. Regressions that fail due to perfect collinearity or
+insufficient observations are excluded.
+
+\section{Results}\label{results}
+
+\subsection{Model 1: Equal-Weighted Industry and Location
+Benchmarks}\label{model-1-equal-weighted-industry-and-location-benchmarks}
+
+Table 5 combines the main regression results for both specifications and
+both samples. For each five-year window, the table reports the
+cross-sectional mean of the firm-level time-series betas and the
+associated \(t\)-statistics. The broad-sample columns are based on
+3,275, 3,158, and 3,146 firm-level regressions across the three windows,
+while the S\&P 500 columns are based on 382, 394, and 377 regressions.
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:master-results-table}Cross-Sectional Average Betas by Model, Sample, and Estimation Window}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{8}{10}\selectfont
+\begin{tabular}[t]{>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{1.8cm}cccccccccccc}
+\toprule
+\multicolumn{2}{c}{ } & \multicolumn{3}{c}{Model 1: All Stocks} & \multicolumn{3}{c}{Model 1: S\textbackslash{}\&P 500} & \multicolumn{3}{c}{Model 2: All Stocks} & \multicolumn{3}{c}{Model 2: S\textbackslash{}\&P 500} \\
+\cmidrule(l{3pt}r{3pt}){3-5} \cmidrule(l{3pt}r{3pt}){6-8} \cmidrule(l{3pt}r{3pt}){9-11} \cmidrule(l{3pt}r{3pt}){12-14}
+Period &  & $\hat{\beta}_{Loc}$ & $\hat{\beta}_{Mkt}$ & $\hat{\beta}_{Ind}$ & $\hat{\beta}_{Loc}$ & $\hat{\beta}_{Mkt}$ & $\hat{\beta}_{Ind}$ & $\hat{\beta}_{Loc}$ & $\hat{\beta}_{Mkt}$ & $\hat{\beta}_{Ind}$ & $\hat{\beta}_{Loc}$ & $\hat{\beta}_{Mkt}$ & $\hat{\beta}_{Ind}$\\
+\midrule
+2008--2012 & Mean $\beta$ & 0.200 & 0.123 & 0.710 & 0.006 & 0.427 & 0.638 & 0.116 & 0.632 & 0.492 & 0.079 & 0.372 & 0.731\\
+ & $t$-stat & (9.91) & (4.79) & (35.42) & (0.17) & (9.96) & (15.96) & (4.93) & (21.28) & (26.58) & (2.01) & (7.26) & (22.42)\\
+2013--2017 & Mean $\beta$ & 0.213 & 0.096 & 0.710 & -0.042 & 0.521 & 0.525 & 0.182 & 0.372 & 0.579 & 0.128 & 0.226 & 0.702\\
+ & $t$-stat & (7.84) & (3.37) & (33.24) & (-1.67) & (14.35) & (17.38) & (6.44) & (9.97) & (26.85) & (3.92) & (5.05) & (21.05)\\
+2018--2022 & Mean $\beta$ & 0.295 & 0.084 & 0.654 & -0.023 & 0.570 & 0.450 & 0.222 & 0.356 & 0.506 & 0.192 & 0.281 & 0.607\\
+ & $t$-stat & (13.33) & (3.72) & (27.08) & (-1.11) & (19.81) & (16.71) & (7.94) & (10.49) & (26.32) & (6.54) & (7.79) & (21.18)\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+To visualize the mechanical difference between these weighting schemes,
+Figure 1 illustrates the location-benchmark composition for the most
+populated MSA at the end of the sample (December 2022), breaking it down
+by the four variants from Table 5. A single-month snapshot is shown to
+avoid averaging artifacts from firms relocating during the period. The
+side-by-side comparison makes it immediately clear how the
+value-weighted specification concentrates nearly all influence on the
+largest firms in the MSA, while the equal-weighted specification gives
+every peer exactly the same share.
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{first_draft_new_files/figure-latex/fig-location-panels-1} 
+
+}
+
+\caption{Firm-level empirical location-benchmark weights at the final snapshot month (December 2022) of the 2018--2022 estimation window, under each of the four model/subsample variants in Table 5. Within each panel, firms are ordered from smallest to largest by market capitalization at the snapshot, and bar height reports each firm's absolute weight in the corresponding leave-one-out location benchmark. The y-axis is on a common logarithmic scale across all four panels for direct visual comparison. Each panel's subtitle reports the MSA and number of firms N.}\label{fig:fig-location-panels}
+\end{figure}
+
+The Model 1 columns of Table 5 point to a clear pattern in the broad
+sample: the location effect is positive, statistically significant, and
+growing monotonically across the three sub-periods.
+\(\hat{\beta}_{Loc}\) rises from 0.200 (\(t=9.91\)) in 2008--2012 to
+0.213 (\(t=7.84\)) in 2013--2017 and then to 0.295 (\(t=13.33\)) in
+2018--2022. The market loading simultaneously shrinks from 0.123 to
+0.084, which indicates that broad market movements explain progressively
+less of the residual variation in individual returns once industry is
+controlled for. The equal-weighted industry loading remains the dominant
+regressor throughout, hovering around 0.65--0.71.
+
+The S\&P 500 columns of Table 5 display a very different outcome under
+this pure equally weighted specification. The average
+\(\hat{\beta}_{Loc}\) is indistinguishable from zero (0.006 in
+2008--2012, \(-0.042\) in 2013--2017, and \(-0.023\) in 2018--2022) and
+statistically insignificant in every window; the corresponding
+\(t\)-statistics of 0.17, \(-1.67\), and \(-1.11\) do not reject zero at
+conventional significance levels. This pattern indicates that for
+large-cap firms, an equally weighted average of local peers---which is
+mechanically dominated by smaller firms in the same MSA---does not
+capture their return comovement. The co-movement that clearly exists
+among large caps is absorbed instead by the market loading, which grows
+from 0.427 to 0.570 across the three windows. The picture changes
+considerably once both the industry and location benchmarks are
+value-weighted, as shown in the next section.
+
+\subsection{Model 2: Value-Weighted Industry and Location
+Benchmarks}\label{model-2-value-weighted-industry-and-location-benchmarks}
+
+The Model 2 columns of Table 5 show what happens when both the location
+factor and the industry factor are re-weighted by market capitalization.
+Relative to Model 1, the specification gives greater influence to larger
+firms in both comparison portfolios.
+
+The Model 2 results still provide strong evidence of the location
+factor's robustness in the broad sample, but the magnitudes are more
+moderate than the Model 1 estimates. Among all stocks,
+\(\hat{\beta}_{Loc}\) averages 0.116 (\(t=4.93\)) in 2008--2012, 0.182
+(\(t=6.44\)) in 2013--2017, and 0.222 (\(t=7.94\)) in 2018--2022. The
+important point is not that value-weighting mechanically attenuates the
+coefficient, but that the location loading remains positive and
+statistically significant after both the location and industry
+benchmarks are tilted toward larger firms. Model 2 therefore strengthens
+the persistence result: even when the local benchmark itself is rebuilt
+as a value-weighted portfolio, the geographic factor continues to
+survive.
+
+The S\&P 500 subsample under Model 2 also remains positive and
+statistically significant in every window: \(\hat{\beta}_{Loc}=0.079\)
+(\(t=2.01\)) in 2008--2012, 0.128 (\(t=3.92\)) in 2013--2017, and 0.192
+(\(t=6.54\)) in 2018--2022. Even after both the industry factor and the
+location factor are tilted toward large-cap firms, the local co-movement
+effect is still present, and it becomes more visible in the later
+sub-periods. The main implication is therefore persistence rather than
+disappearance: the geographic factor documented in the original study
+continues to survive in the modern sample, even under a value-weighted
+specification.
+
+\subsection{Comparison with Original Pirinsky and Wang (2006)
+Results}\label{comparison-with-original-pirinsky-and-wang-2006-results}
+
+Table 6 compares the Model 1 location betas from this study with the
+original Pirinsky and Wang (2006) estimates.
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:comparison}Location Beta ($\hat{\beta}_{Loc}$) Across Eras: Pirinsky--Wang (2006) vs.\ This Study (Model 1, All Stocks)}
+\centering
+\fontsize{10}{12}\selectfont
+\begin{tabular}[t]{lcc}
+\toprule
+Period & $\hat{\beta}_{Loc}$ & $t$-statistic\\
+\midrule
+\addlinespace[0.3em]
+\multicolumn{3}{l}{\textbf{Original Study (1988--2002)}}\\
+\hspace{1em}1988--1992 (PW) & 0.545 & (22.58)\\
+\hspace{1em}1993--1997 (PW) & 0.532 & (27.37)\\
+\hspace{1em}1998--2002 (PW) & 0.459 & (23.08)\\
+\addlinespace[0.3em]
+\multicolumn{3}{l}{\textbf{This Study (2008--2022)}}\\
+\hspace{1em}2008--2012 (This study) & 0.200 & (9.91)\\
+\hspace{1em}2013--2017 (This study) & 0.213 & (7.84)\\
+\hspace{1em}2018--2022 (This study) & 0.295 & (13.33)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two observations emerge from Table 6. First, the modern Model 1 location
+betas for the broad sample are meaningfully smaller than the 1990s
+estimates: the original Pirinsky and Wang (2006) coefficients range from
+0.459 to 0.545, versus 0.200 to 0.295 in this study. Depending on the
+comparison window, the original magnitudes are roughly two to three
+times larger. Second, while the original study reported a
+\textit{declining} location effect over time (0.545 \(\to\) 0.532
+\(\to\) 0.459), the modern broad-sample estimates move in the opposite
+direction, tracing a monotone \textit{increase} (0.200 \(\to\) 0.213
+\(\to\) 0.295). The decline during the late 20th century may have
+reflected the gradual dissolution of local information asymmetries under
+improving telecommunications, whereas the post-financial-crisis years
+appear to have reversed that trend for the typical firm in the
+cross-section. The S\&P 500 subsample adds a modern twist: the
+equal-weighted specification yields little evidence of a large-cap
+location effect, but the value-weighted specification restores a
+positive and statistically significant loading, especially in the later
+windows.
+
+\section{Discussion}\label{discussion}
+
+\subsection{Persistence of the Location
+Effect}\label{persistence-of-the-location-effect}
+
+The main message of the modern sample is straightforward: the location
+effect documented by Pirinsky and Wang (2006) has not disappeared. In
+the broad sample, the location loading remains positive and
+statistically significant in every five-year window under both
+specifications. Under Model 1, \(\hat{\beta}_{Loc}\) rises from 0.200
+(\(t=9.91\)) in 2008--2012 to 0.295 (\(t=13.33\)) in 2018--2022. Under
+Model 2, where both the industry factor and the location factor are
+value-weighted, the location loading is again positive and statistically
+significant in all three windows, rising from 0.116 (\(t=4.93\)) to
+0.222 (\(t=7.94\)).
+
+Even in the large-cap subsample, the evidence does not point to
+disappearance. The equal-weighted specification yields weak results for
+S\&P 500 firms, but once the location and industry benchmarks are
+reweighted toward large firms, the estimated location loading is
+positive and statistically significant in every window, increasing from
+0.079 (\(t=2.01\)) to 0.192 (\(t=6.54\)). The broad conclusion is
+therefore one of continuity: the geographic return comovement found in
+the original study remains present in the modern U.S. market, and it
+continues to show up as a statistically significant source of shared
+variation in stock returns.
+
+\subsection{Why the Weighting Scheme Changes the Large-Cap
+Picture}\label{why-the-weighting-scheme-changes-the-large-cap-picture}
+
+A second noteworthy result is that the S\&P 500 location loading is
+statistically indistinguishable from zero under the equal-weighted
+benchmark design, yet clearly positive under the value-weighted
+benchmark design. Two observations help to rationalize this contrast.
+First, an equal-weighted average of local peers is mechanically
+dominated by smaller firms in the same MSA, whose co-movement with a
+mega-cap anchor is modest. Second, once the location and industry
+benchmarks are value-weighted, the dominant-firm component of return
+variation is absorbed more cleanly, and whatever local co-movement
+remains among the largest stocks is re-exposed rather than hidden inside
+the regressors. The contrast between the two specifications is therefore
+informative: it tells us that the location effect among large caps is
+real but comparatively small, and that it can only be detected once the
+benchmark construction no longer conflates peer structure with size.
+
+\subsection{Implications for Asset
+Pricing}\label{implications-for-asset-pricing}
+
+These findings have several implications for asset pricing models and
+portfolio management:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Multi-factor models.} A geographic factor appears to
+  complement rather than simply proxy for industry exposure. The modern
+  evidence suggests that the factor remains relevant across the broad
+  sample and is still detectable among large-cap firms once the location
+  and industry benchmarks are constructed in a size-aware way.
+\item
+  \textbf{Diversification.} Investors seeking to diversify idiosyncratic
+  risk should continue to treat geographic concentration as a meaningful
+  dimension of common exposure. The effect is especially visible in the
+  broad sample, but the S\&P 500 results show that it is not absent even
+  among large firms.
+\item
+  \textbf{The evolving role of ``location.''} As remote work becomes
+  more prevalent and firms become more geographically dispersed
+  operationally, the informational content of corporate headquarters may
+  evolve rather than erode uniformly. Future research should consider
+  alternative measures of geographic exposure, such as the distribution
+  of a firm's employees, facilities, or revenue across regions, and
+  should examine whether the persistence of the location effect
+  documented here reflects local sentiment, local fundamentals, or some
+  combination of the two in the post-crisis market.
+\end{enumerate}
+
+\section{Conclusion}\label{conclusion}
+
+This study replicates and extends Pirinsky and Wang (2006) using data
+from 2008 to 2022, a period that encompasses the global financial
+crisis, the post-crisis recovery, the rise of passive investing, and the
+COVID-19 pandemic. The results confirm that the geographic co-movement
+effect persists in the modern era under the original equal-weighted
+specification, albeit at roughly half of the 1990s magnitude in the
+broad sample, and they show that the effect also survives a
+specification in which both the industry benchmark and the location
+benchmark are value-weighted. In the broad sample the location beta
+grows monotonically from 0.200 in 2008--2012 to 0.295 in 2018--2022
+under Model 1, and from 0.116 to 0.222 under Model 2. Among S\&P 500
+constituents the location loading is statistically zero under Model 1,
+but it is positive and significant in every window under Model 2, rising
+from 0.079 to 0.192.
+
+These findings suggest that the digital revolution and the trend toward
+remote work have not dissolved the geographic co-movement effect.
+Physical corporate headquarters location continues to explain a
+statistically significant portion of return co-movement in the modern
+U.S. market, and that conclusion survives even when the location and
+industry benchmarks are reweighted toward the largest firms. Future
+research should investigate the causal mechanisms---distinguishing
+between local investor sentiment, shared economic exposure, executive
+labor market effects, and information spillovers---and explore whether
+the post-pandemic shift to remote work represents a permanent structural
+break in the geographic organization of financial markets.
+
+\newpage
+
+\section{References}\label{references}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{0.5em}
+
+Pirinsky, C., and Wang, Q. (2006). Does corporate headquarters location
+matter for stock returns? \emph{Journal of Finance}, 61(4), 1991--2015.
+
+\end{document}
